@@ -1,0 +1,79 @@
+<html>
+    <head>
+        <title>Match Scouting</title>
+        <link href="zoobotix-logo-new.png" rel="icon">
+        <style>
+            body {
+                background-color: #6b3400;
+                color: #FF8210;
+                font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            }
+
+            #scoring {
+              max-height: 0;
+              overflow: hidden;
+              transition: max-height 0.5s ease-in-out;
+            }
+        
+            #scoring.open {
+              max-height: 1000px; /* Adjust height as needed */
+            }
+
+            #togglescoring {
+                background-color: #FF8210; /* Change color as desired */
+                color: white;
+                padding: 10px 20px;
+                border: none; /* Remove default border */
+                border-radius: 5px; /* Add rounded corners */
+                font-size: 16px;
+                cursor: pointer;
+            }
+
+            input, button, select {
+                background-color: #FF8210;
+                color: white;
+                font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+                border-color: #964800;
+                border-radius: 4px;
+            }
+
+            input:focus {
+                outline: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div style="text-align: center;">
+            <a href="/"><img src="zoobotix-logo-new.png" width="50" height="50"></a>
+            <p style="font-size: xx-large; font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; color: #FF8210">Match Scouting</p>
+            <button id="togglescoring">Open Scoring ↓</button>
+            <div style="text-align: center; color: #FF8210; border-color: #FF8210" name="Scoring" id="scoring" style="display: none;" class="closed">
+                <h2>Scoring</h2>
+                <label>Tried in Speaker: </label><input type="number" id="speakertried" step="1"><br>
+                <label>Scored in Speaker: </label><input type="number" id="speakerscored" step="1"><br><br>
+                <label>Tried in Amp: </label><input type="number" id="amptried" step="1"><br>
+                <label>Scored in Amp: </label><input type="number" id="ampscored" step="1"><br><br>
+                <label>Tried in Trap: </label><input type="number" id="traptried" step="1"><br>
+                <label>Scored in Trap: </label><input type="number" id="trapscored" step="1"><br><br>
+                <input class="rpscore" type="checkbox" value="melodyscored" name="rpscore">
+                <label for="melodyscored">Melody</label><br>
+                <input class="rpscore" type="checkbox" value="ensemblescored" name="rpscore">
+                <label for="ensemblescored">Ensemble</label><br>
+            </div>
+        </div>
+        <script>
+            const scoring = document.getElementById('scoring');
+            const togglescoring = document.getElementById('togglescoring');
+
+            togglescoring.addEventListener('click', () => {
+              if (scoring.className === "closed") {
+                scoring.className = "open";
+                togglescoring.innerHTML = "Close Scoring ↑"
+              } else {
+                scoring.className = "closed";
+                togglescoring.innerHTML = "Open Scoring ↓"
+              }
+            });
+        </script>
+    </body>
+</html>

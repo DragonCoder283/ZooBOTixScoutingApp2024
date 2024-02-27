@@ -2,9 +2,7 @@
     <head>
         <title>Pit Scouting</title>
         <link href="zoobotix-logo-new.png" rel="icon">
-        <!-- <link rel="stylesheet" href="https://pyscript.net/releases/2022.12.1/pyscript.css" />
-        <script defer src="https://pyscript.net/releases/2022.12.1/pyscript.js"></script>
-        <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script> -->
+        <script src="https://cdn.jsdelivr.net/npm/enumerate-devices@3.0.0/enumerate-devices.min.js"></script>
         <style>
             body {
                 background-color: #6b3400;
@@ -55,6 +53,12 @@
                 background-color: #FF8210;
                 color: white;
                 font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+                border-color: #964800;
+                border-radius: 4px;
+            }
+
+            input:focus {
+                outline: none;
             }
 
             #camera-container {
@@ -86,14 +90,16 @@
             <button id="togglebasicinfo">Open Basic Info ↓</button>
             <div style="text-align: center; color: #FF8210; border-color: #FF8210" name="Robot Performance" id="robotperformance" style="display: none;" class="closed2">
                 <h2>Basic Info</h2>
-                <label>Team name: </label><input id="team_name" type="text" inputmode="text"/><br/><br/>
+                <label>Scouter name: </label><input id="scouter_name" /><br/><br/>
+                <label>Team name: </label><input id="team_name" /><br/><br/>
+                <label>Team number: </label><input id="team_number" /><br/><br/>
             </div>
             <br>
             <button id="togglerobotinfo">Open Robot Info ↓</button><br/>
             <div style="text-align: center; color: #FF8210; border-color: #FF8210" name="Robot Info" id="robotinfo" style="display: none;" class="closed">
                 <h2>Robot Info</h2>
-                <label>Type of drive (e.g swerve, mecanum, etc.): </label><input id="chassis" type="text" inputmode="text"/><br/><br/>
-                <label>Shooter mechanism: </label><input id="shooter" type="text" inputmode="text"/><br/><br/>
+                <label>Type of drive (e.g swerve, mecanum, etc.): </label><input id="chassis"/><br/><br/>
+                <label>Shooter mechanism: </label><input id="shooter"/><br/><br/>
                 <label>Intakes from: </label>
                 <select name="intake" id="intake">
                     <option value="ground">Ground</option>
@@ -101,7 +107,7 @@
                     <option value="both">Both</option>
                 </select>
                 <br/><br/>
-                <label>Select all they can score in: </label><br/>
+                <label>Select all they CAN score in: </label><br/>
                     <input class="scorein" type="checkbox" value="speaker" name="scorein">
                     <label for="speaker">Speaker</label><br>
                     <input class="scorein" type="checkbox" value="amp" name="scorein">
@@ -110,14 +116,18 @@
                     <label for="both">Trap</label><br/><br/>
                 <table id="TableToExport" style="display: none;">
                     <tr>
+                        <th>Scouter Name</th>
                         <th>Team Name</th>
+                        <th>Team Number</th>
                         <th>Chassis Type</th>
                         <th>Type of Shooter</th>
                         <th>Intakes From</th>
                         <th>They Can Score In..</th>
                     </tr>
                     <tr>
+                        <td id="scouter_name_box"></td>
                         <td id="team_name_box"></td>
+                        <td id="team_number_box"></td>
                         <td id="chassis_box"></td>
                         <td id="shooter_box"></td>
                         <td id="intake_box"></td>
@@ -127,6 +137,7 @@
                 <div id="camera-container">
                     <video id="video" autoplay playsinline></video>
                     <button id="capture-button">Capture</button>
+                    <button id="switch-camera">Switch Camera</button>
                 </div>
                 <br/>
                 <button id="csvexport"><b>Export as CSV</b></button>
@@ -164,31 +175,65 @@
 
             const video = document.getElementById('video');
             const captureButton = document.getElementById('capture-button');
+            const switchButton = document.getElementById("switch-camera");
+
+            let currentCameraId;
+
+            async function requestCamera() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    video.srcObject = stream;
+                    currentCameraId = stream.getTracks()[0].getSettings().deviceId; // Store initial camera ID
+                } catch (error) {
+                    console.error("Error accessing camera:", error);
+                }
+            }
+
+                async function switchCamera() {
+                try {
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+                    if (videoDevices.length > 1) {
+                    const nextCameraId = videoDevices.find(device => device.deviceId !== currentCameraId).deviceId;
+                    const newStream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: nextCameraId } });
+                    video.srcObject = newStream;
+                    currentCameraId = nextCameraId;
+                    } else {
+                    console.warn("Only one camera detected. Switching not possible.");
+                    }
+                } catch (error) {
+                    console.error("Error switching camera:", error);
+                }
+            }
+
+            requestCamera();
+            switchButton.addEventListener('click', switchCamera);
 
             navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
-                captureButton.addEventListener('click', () => {
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                context.drawImage(video, 0, 0);
-                const imageData = canvas.toDataURL('image/png');
-                playSound('camera.wav')
-                console.log('Image captured!');
-                const downloadLink = document.createElement('a');
-                downloadLink.href = imageData;
-                downloadLink.download = document.getElementById("team_name").value + '.png'; // Set desired filename
-                downloadLink.click();
+                    captureButton.addEventListener('click', () => {
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    context.drawImage(video, 0, 0);
+                    const imageData = canvas.toDataURL('image/png');
+                    playSound('camera.wav')
+                    console.log('Image captured!');
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = imageData;
+                    downloadLink.download = document.getElementById("team_name").value + '.png'; // Set desired filename
+                    downloadLink.click();
 
-                // Optionally remove or hide the download link after usage
-                downloadLink.remove();
+                    // Optionally remove or hide the download link after usage
+                    downloadLink.remove();
                 });
             })
             .catch(error => {
                 console.error('Error accessing camera:', error);
-            });
+            })
 
             function playSound(soundFile) {
                 const audio = new Audio(soundFile);
@@ -206,7 +251,9 @@
             }
 
             function addData(table) {
+                document.getElementById("scouter_name_box").innerHTML = document.getElementById("scouter_name").value;
                 document.getElementById("team_name_box").innerHTML = document.getElementById("team_name").value;
+                document.getElementById("team_number_box").innerHTML = document.getElementById("team_number").value;
                 document.getElementById("chassis_box").innerHTML = document.getElementById("chassis").value;
                 document.getElementById("shooter_box").innerHTML = document.getElementById("shooter").value;
                 document.getElementById("intake_box").innerHTML = document.getElementById("intake").value;
