@@ -101,11 +101,6 @@
                 <label>Type of drive (e.g swerve, mecanum, etc.): </label><input id="chassis"/><br/><br/>
                 <label>Shooter mechanism: </label><input id="shooter"/><br/><br/>
                 <label>Intakes from: </label>
-                <select name="intake" id="intake">
-                    <option value="ground">Ground</option>
-                    <option value="source">Source</option>
-                    <option value="both">Both</option>
-                </select>
                 <br/><br/>
                 <label>Select all they CAN score in: </label><br/>
                     <input class="scorein" type="checkbox" value="speaker" name="scorein">
@@ -130,7 +125,6 @@
                         <td id="team_number_box"></td>
                         <td id="chassis_box"></td>
                         <td id="shooter_box"></td>
-                        <td id="intake_box"></td>
                     </tr>
                 </table>
                 <p>Robot Picture:</p>
@@ -256,7 +250,6 @@
                 document.getElementById("team_number_box").innerHTML = document.getElementById("team_number").value;
                 document.getElementById("chassis_box").innerHTML = document.getElementById("chassis").value;
                 document.getElementById("shooter_box").innerHTML = document.getElementById("shooter").value;
-                document.getElementById("intake_box").innerHTML = document.getElementById("intake").value;
 
                 function getCheckedValues() {
                     const checkedBoxes = document.querySelectorAll('input[type="checkbox"]:checked');
